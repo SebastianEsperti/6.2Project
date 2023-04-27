@@ -1,3 +1,11 @@
+//helper function 
+
+function reduceToTopFive(array) {
+  while (array.length > 5) array.pop()
+}
+
+
+
 function getTotalBooksCount(books) {
   return books.length
 }
@@ -21,22 +29,20 @@ function getBooksBorrowedCount(books) {
 }
 
 function getMostCommonGenres(books) {
-  let genreMasterList = []
-  let sortedGenres = []
- 
-  books.forEach((book)=> genreMasterList.push(book.genre))
-
-  genreMasterList.forEach((index)=> {
-   let genreObj = sortedGenres.find((object)=> object.name === index)
-    if (genreObj) {
-      genreObj.count++
+  const genreCounts = books.reduce((accumulator, book) => {
+    const genre = book.genre
+    if (!accumulator[genre]) {
+      accumulator[genre] = 1;
     } else {
-      sortedGenres.push({name: index, count: 1})
+      accumulator[genre]++
     }
-   })
-
-  sortedGenres.sort((a, b)=> b.count - a.count)
-  while (sortedGenres.length > 5) sortedGenres.pop() 
+    return accumulator;
+  }, {})
+  const sortedGenres = Object.keys(genreCounts)
+    .map(name =>({name, count: genreCounts[name]}))
+    .sort ((a, b)=> b.count - a.count)
+  
+  reduceToTopFive(sortedGenres)
   return sortedGenres
 }
 
@@ -44,7 +50,7 @@ function getMostPopularBooks(books) {
   let bookNameCount = []
   books.forEach((book)=> bookNameCount.push({name: book.title, count: book.borrows.length}))
   bookNameCount.sort((a, b)=> b.count - a.count)
-  while (bookNameCount.length > 5) bookNameCount.pop()
+  reduceToTopFive(bookNameCount)
   return bookNameCount
 }
 
@@ -62,16 +68,14 @@ function getMostPopularAuthors(books, authors) {
           authIdAndCount.push({id: book.authorId, count: book.borrows.length})
         }
     })
-    //console.log(authIdAndCount)
 
     const result = authIdAndCount.map((pair)=>{
       const author = authors.find((author)=> author.id === pair.id)
       const name = `${author.name.first} ${author.name.last}`
       return {name, count: pair.count}
     })
-    console.log(result)
     result.sort((a, b)=> b.count - a.count)
-    while (result.length > 5) result.pop()
+    reduceToTopFive(result)
     return result
 }
 module.exports = {
